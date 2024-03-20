@@ -1,10 +1,24 @@
 from fastapi import FastAPI
-from langchain import TranslationClient
+from langchain_openai import ChatOpenAI
 
 app = FastAPI()
-client = TranslationClient()
+llm = ChatOpenAI(openai_api_key="...")
+
+@app.get("/")
+def home(): 
+    return {"message": "Bem-vindo à API de tradução"}
 
 @app.post("/translate")
-async def translate(text: str):
-    translation = await client.translate(text, target_language='pt')
+def translate_text(request: dict):
+    text = request.get("text", "") 
+
+    prompt = [
+        {"role": "system", "content": "Você é um tradutor de classe mundial."},
+        {"role": "user", "content": text}
+    ]
+
+    response = llm.invoke(prompt)
+
+    translation = response.content# Acessando a tradução corrigida
+
     return {"translation": translation}
